@@ -11,66 +11,29 @@ DB_USERNAME=[Your DB Username]
 DB_PASSWORD=[Your DB Password]
 ~~~~
 
-## Api Authentication [Laravel Sanctum]
+## Api Authentication [Laravel JWT]
 
-### Step 2: Install Laravel Sanctum
-~~~~
-composer require laravel/sanctum
-~~~~
+### What is JSON Web Token?
+JSON Web Token (JWT) is an open standard (RFC 7519), and it represents a compact and self-contained method for securely transmitting information between parties as a JSON object. Digital signature makes the data transmission via JWT trusted and verified. JWTs built upon the secret HMAC algorithm or a public/private key pair using RSA or ECDSA.
 
-### Step 3: Publish the Sanctum configuration and migration files.
-~~~~
-php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
-~~~~
+### Why is JWT Required?
 
-### Step 4: Run your database migrations.
-~~~~
-php artisan migrate 
-~~~~
+JWT is used for Authorization and information exchange between server and client. It authenticates the incoming request and provides an additional security layer to REST API, which is best for security purposes.
 
-### Step 5: Add the Sanctum's middleware to [/app/Http/Kernel.php] file
+### How does JWT Work?
+User information such as username and password is sent to the web-server using HTTP GET and POST requests. The web server identifies the user information and generates a JWT token and sends it back to the client. Client store that token into the session and also set it to the header. On the next HTTP call, that token is verified by the server, which returns the response to the client.
+
+### JSON Web Token Structure
+
+JSON Web Tokens contains three parts separated by dots (.) In its dense form.
+
 ~~~~
-use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful; [Import this in top]
-
-Add the following line inside [protected $middlewareGroups] 
-
-'api' => [
-     EnsureFrontendRequestsAreStateful::class,
-     'throttle:api',
-     \Illuminate\Routing\Middleware\SubstituteBindings::class,
-],
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9
+.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3RcL3RoZXNob3BseV9uZXRfYXBpXC9hcGlcL3YxXC9hdXRoXC9sb2dpbiIsImlhdCI6MTYyMjA1MzcyMiwiZXhwIjoxOTMzMDkzNzIyLCJuYmYiOjE2MjIwNTM3MjIsImp0aSI6IlF3a25RaHRuZUU4VG85UnAiLCJzdWIiOjMzOSwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9
+.qnLLmbwpDS7dh31l8U7VGBzQ3oud79fihJ_5uSsUcVY
 ~~~~
 
-### Step 6: To use tokens for users [in user model]
-~~~~
-use Laravel\Sanctum\HasApiTokens;
+- Header
+- Payload
+- Signature
 
-class User extends Authenticatable
-{
-    use HasApiTokens, HasFactory, Notifiable;
-}
-~~~~
-
-### Step 7: Let's create the seeder for the User Model
-~~~~
-First make the facker UserFactory.php
-
-public function definition()
-{
-  $gender = $this->faker->randomElement(['male', 'female']);
-  return [
-  'first_name' => $this->faker->firstName($gender),
-  'last_name' => $this->faker->firstName($gender),
-  'username' => $this->faker->userName,
-  'phone' => $this->faker->phoneNumber,
-  'email' => $this->faker->unique()->safeEmail(),
-  'email_verified_at' => now(),
-  'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-  'remember_token' => Str::random(10),
-  ];
-}
-
-Then seed the UserSeeder class
-
-php artisan db:seed --class=UserSeeder
-~~~~
