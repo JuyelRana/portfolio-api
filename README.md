@@ -76,3 +76,108 @@ We have successfully generated the JWT Secret key, and you can check this key in
 ```` 
 JWT_SECRET=secret_jwt_string_key
 ````
+
+### Set Up User Model
+Laravel comes with a pre-defined **User** model; we can use the User model for authentication process. In this step, we will learn how to implement the jwt-auth package in a user model.
+
+Define **Tymon\JWTAuth\Contracts\JWTSubject** contract before the User model. This method wants you to define the two methods:
+
+- **getJWTIdentifier():** Get the identifier that will be stored in the subject claim of the JWT.
+- **getJWTCustomClaims():** Return a key value array, containing any custom claims to be added to the JWT.
+
+### Configure Auth guard
+Now, we need to set up the JWT Auth Guard to secure the Laravel application’s authentication process. Laravel guard uses the session driver to protect the guards. However, we set the defaults guard to api, and the api guards is ordered to use jwt driver
+
+Place the following code in **config/auth.php** file.
+
+```` 
+<?php
+
+return [
+
+    'defaults' => [
+        'guard' => 'api',
+        'passwords' => 'users',
+    ],
+
+
+    'guards' => [
+        'web' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+
+        'api' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
+            'hash' => false,
+        ],
+    ],
+````
+
+### Make a Helper Class for formation the api response
+
+```` 
+<?php
+
+namespace App\Http\Helpers;
+
+class APIHelpers
+{
+    public static function createAPIResponse($is_error, $code, $message, $content = null)
+    {
+        $result = [];
+
+        if ($is_error) {
+            $result['success'] = false;
+            $result['code'] = $code;
+            $result['message'] = $message;
+
+            if ($content != null) {
+                $result['errors'] = $content;
+            }
+        } else {
+            $result['success'] = true;
+            $result['code'] = $code;
+            $result['message'] = $message;
+
+            if ($content != null) {
+                $result['data'] = $content;
+            }
+        }
+        return $result;
+    }
+}
+````
+
+### Make a middleware for authenticate jwt token
+`php artisan make:middleware JWT`
+
+In the **app\Http\Middleware\JWT** file put the following code
+
+```` 
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use JWTAuth;
+
+class JWT
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
+     * @return mixed
+     */
+    public function handle(Request $request, Closure $next)
+    {
+        JWTAuth::parseToken()->authenticate();
+
+        return $next($request);
+    }
+}
+````
