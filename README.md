@@ -37,3 +37,42 @@ eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9
 - Payload
 - Signature
 
+
+## Install & Configure JWT Authentication Package
+
+Execute the following command to install [tymon/jwt-auth](https://github.com/tymondesigns/jwt-auth), It is a third-party JWT package and allows user authentication using JSON Web Token in Laravel & Lumen securely.
+
+`composer require tymon/jwt-auth`
+
+Above command installed the jwt-auth package in the vendor folder, now we have to go to **config/app.php** file and include the laravel service provider inside the `providers` array.
+
+Also include the **JWTAuth** and **JWTFactory** facades inside the `aliases` array.
+
+````
+'providers' => [
+    ....
+    ....
+    Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+],
+'aliases' => [
+    ....
+    'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
+    'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
+    ....
+],
+````
+
+In the next step, we have to publish the package’s configuration, following command copy JWT Auth files from vendor folder to **config/jwt.php** file.
+
+```` 
+php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
+````
+
+For handling the token encryption, generate a secret key by executing the following command.
+```` 
+php artisan jwt:secret
+````
+We have successfully generated the JWT Secret key, and you can check this key inside the **.env** file.
+```` 
+JWT_SECRET=secret_jwt_string_key
+````
